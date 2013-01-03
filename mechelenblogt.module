@@ -11,45 +11,38 @@ function mechelenblogt_help($path, $arg) {
   $output = '';
   switch ($path) {
     case "admin/help#mechelenblogt":
-      $output = '<p>'.  t("Maakt een eenvoudig 'statistiekjes' blok beschikbaar, waarvan de gegeven gecached worden.") .'</p>';
+      $output = '<p>'.  t("Maakt een eenvoudig 'statistiekjes' blok beschikbaar, waarvan de gegevens gecached worden. Cache wordt leeg gemaakt wanneer er een nieuwe reactie geplaatst wordt.</p><p>Wist de standaard naam 'Anoniem' op het reactieformulier zodat de gebruiker iets anders moet invullen.") .'</p>';
       break;
   }
   return $output;
 }
 
 
-/**
-* Generate HTML for all the blocks provided by the Mechelen Blogt module
-* @param op the operation from the URL
-* @param delta offset
-* @returns block HTML
-*/
-function mechelenblogt_block($op = 'list', $delta = 0) {
-  // listing of blocks, such as on the admin/block page
-  if ($op == 'list') {
-    $blocks[0] = array(
-	    'info'  => 'Mechelen Blogt statistiekjes',
-	    'cache' => BLOCK_CACHE_GLOBAL
-	);
+function mechelenblogt_block_info() {
+  $blocks['statistiekjes'] = array(
+    'info' => 'Mechelen Blogt statistiekjes',
+    'cache' => DRUPAL_CACHE_GLOBAL,
+  );
+  return $blocks;
+}
 
-    return $blocks;
-  } else if ($op == 'view') {
-
-	// set up the block 
-	$block = array(
-		'subject' => 'Statistiekjes',
-		'content' => mechelenblogt_get_statistiekjes()
-	);
-		
-	return $block;
+function mechelenblogt_block_view($delta = '') {
+  if ($delta != 'statistiekjes') {
+    return $stats_block;
   }
+  // set up the block 
+  $stats_block = array(
+    'subject' => 'Statistiekjes',
+    'content' => mechelenblogt_get_statistiekjes($delta),
+  );
+  return $stats_block;
 }
 
 /**
 * Hook_comment implementation
 * Clear the statistics cache when a comment is published or unpublished.
 */
-function mechelenblogt_comment(&$a1, $op) {
+function mmmechelenblogt_comment(&$a1, $op) {
   static $mechelenblogt_statistiekjes_message;
   if ($op == 'insert' || $op == 'publish' || $op == 'unpublish' || $op == 'delete') {
     cache_clear_all('mechelenblogt_statistiekjes_message', 'cache');
@@ -61,24 +54,27 @@ function mechelenblogt_comment(&$a1, $op) {
 * Hook_nodeapi implementation
 * Clear the statistics cache when a node is published or unpublished.
 */
-function mechelenblogt_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+function mmmechelenblogt_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   // there is no 'publish' operation (??), so we clear the cache with every node operation
   cache_clear_all('mechelenblogt_statistiekjes_message', 'cache');
   unset($mechelenblogt_statistiekjes_message);
 }
 
-function mechelenblogt_get_statistiekjes($reset = FALSE) {
+function mechelenblogt_get_statistiekjes($delta) {
   $REFRESH_INTERVAL = 60*60;  // hard refresh every hour
   
   static $mechelenblogt_statistiekjes_message;
   
-  if (!isset($mechelenblogt_statistiekjes_message) || $reset) {
-    if (!$reset && ($cache = cache_get('mechelenblogt_statistiekjes_message')) && !empty($cache->data)) {	
-      $mechelenblogt_statistiekjes_message = unserialize($cache->data);
+  if (!isset($mechelenblogt_statistiekjes_message)) {
+    // try to load from cache
+    $cache = cache_get('mechelenblogt_statistiekjes_message');
+    if ($cache && !empty($cache->data)) {	
+      $mechelenblogt_statistiekjes_message = $cache->data;
     }
     else {
-      $posts = db_fetch_object(db_query("SELECT COUNT(*) AS number FROM {node} WHERE created <= UNIX_TIMESTAMP() AND status = 1 AND type in ('blog_artikel', 'gastblog', 'enquete');"));
-      $comments = db_fetch_object(db_query("SELECT SUM(comment_count) AS number FROM {node_comment_statistics} INNER JOIN {node} ON {node_comment_statistics}.nid = {node}.nid WHERE {node}.created <= UNIX_TIMESTAMP() AND {node}.type IN ('blog_artikel', 'gastblog', 'enquete') AND {node}.status = 1 AND {node.comment} > 0;"));
+      $posts = db_query("SELECT COUNT(*) AS number FROM {node} WHERE created <= UNIX_TIMESTAMP() AND status = 1 AND type in ('blog_artikel', 'gastblog', 'enquete');")->fetchObject();
+
+      $comments = db_query("SELECT SUM(comment_count) AS number FROM {node_comment_statistics} INNER JOIN {node} ON {node_comment_statistics}.nid = {node}.nid WHERE {node}.created <= UNIX_TIMESTAMP() AND {node}.type IN ('blog_artikel', 'gastblog', 'enquete') AND {node}.status = 1 AND {node.comment} > 0;")->fetchObject();
       $mechelenblogt_statistiekjes_message = '<p class="mechelenblogt-statistiekjes">Mechelen Blogt telt ' . number_format($posts->number, 0, ',', '.') . ' artikels en ' . number_format($comments->number, 0, ',', '.') . ' reacties.</p>';
       cache_set('mechelenblogt_statistiekjes_message', $mechelenblogt_statistiekjes_message, 'cache', time() + $REFRESH_INTERVAL);
     }

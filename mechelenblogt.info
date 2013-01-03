@@ -1,5 +1,6 @@
 ; $Id$
 name = Mechelen Blogt
 description = Kleine toevoegingen specifiek voor de Mechelen Blogt website.
-core = 6.x
 package = "Mechelen Blogt"
+core = 7.x
+dependencies[] = block
