@@ -2,11 +2,12 @@
 // $Id$
 
 /**
-* Display help and module information
-* @param path which path of the site we're displaying help
-* @param arg array that holds the current path as would be returned from arg() function
-* @return help text for the path
-*/
+ * Implements hook_help.
+ * Display help and module information
+ * @param path which path of the site we're displaying help
+ * @param arg array that holds the current path as would be returned from arg() function
+ * @return help text for the path
+ */
 function mechelenblogt_help($path, $arg) {
   $output = '';
   switch ($path) {
@@ -18,6 +19,9 @@ function mechelenblogt_help($path, $arg) {
 }
 
 
+/**
+ * Implements hook_block_info.
+ */
 function mechelenblogt_block_info() {
   $blocks['statistiekjes'] = array(
     'info' => 'Mechelen Blogt statistiekjes',
@@ -26,6 +30,10 @@ function mechelenblogt_block_info() {
   return $blocks;
 }
 
+
+/**
+ * Implements hook_block_view.
+ */
 function mechelenblogt_block_view($delta = '') {
   if ($delta != 'statistiekjes') {
     return $stats_block;
@@ -38,28 +46,66 @@ function mechelenblogt_block_view($delta = '') {
   return $stats_block;
 }
 
+
 /**
-* Hook_comment implementation
-* Clear the statistics cache when a comment is published or unpublished.
-*/
-function mmmechelenblogt_comment(&$a1, $op) {
-  static $mechelenblogt_statistiekjes_message;
-  if ($op == 'insert' || $op == 'publish' || $op == 'unpublish' || $op == 'delete') {
-    cache_clear_all('mechelenblogt_statistiekjes_message', 'cache');
-    unset($mechelenblogt_statistiekjes_message);
-  }
+ * Implements hook_comment_insert.
+ * Clear the statistics cache when a comment is added.
+ */
+function mechelenblogt_comment_insert($comment) {
+  echo("Comment insert");
+  mechelenblogt_clear_statistiekjes();
 }
 
 /**
-* Hook_nodeapi implementation
-* Clear the statistics cache when a node is published or unpublished.
-*/
+ * Implements hook_comment_delete.
+ * Clear the statistics cache when a comment is removed.
+ */
+function mechelenblogt_comment_delete($comment) {
+  mechelenblogt_clear_statistiekjes();
+}
+
+
+/**
+ * Implements hook_comment_publish.
+ * Clear the statistics cache when a comment is published.
+ */
+function mechelenblogt_comment_publish($comment) {
+  mechelenblogt_clear_statistiekjes();
+}
+
+
+/**
+ * Implements hook_comment_unpublish.
+ * Clear the statistics cache when a comment is unpublished.
+ */
+function mechelenblogt_comment_unpublish($comment) {
+  mechelenblogt_clear_statistiekjes();
+}
+
+
+/**
+ * Hook_nodeapi implementation
+ * Clear the statistics cache when a node is published or unpublished.
+ */
 function mmmechelenblogt_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   // there is no 'publish' operation (??), so we clear the cache with every node operation
   cache_clear_all('mechelenblogt_statistiekjes_message', 'cache');
   unset($mechelenblogt_statistiekjes_message);
 }
 
+
+/**
+ * Clear the statistics cache.
+ */
+function mechelenblogt_clear_statistiekjes() {
+  static $mechelenblogt_statistiekjes_message;
+  cache_clear_all('mechelenblogt_statistiekjes_message', 'cache');
+  unset($mechelenblogt_statistiekjes_message);
+}
+
+/**
+ * Calculate the statistics and save it into a cached message.
+ */
 function mechelenblogt_get_statistiekjes($delta) {
   $REFRESH_INTERVAL = 60*60;  // hard refresh every hour
   
