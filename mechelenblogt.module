@@ -84,13 +84,20 @@ function mechelenblogt_comment_unpublish($comment) {
 
 
 /**
- * Hook_nodeapi implementation
- * Clear the statistics cache when a node is published or unpublished.
+ * Implements hook_node_insert().
+ * Clear the statistics cache when a node is inserted.
  */
-function mmmechelenblogt_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  // there is no 'publish' operation (??), so we clear the cache with every node operation
-  cache_clear_all('mechelenblogt_statistiekjes_message', 'cache');
-  unset($mechelenblogt_statistiekjes_message);
+function mechelenblogt_node_insert($node) {
+  mechelenblogt_clear_statistiekjes();
+}
+
+
+/**
+ * Implements hook_node_delete().
+ * Clear the statistics cache when a node is deleted.
+ */
+function mechelenblogt_node_delete($node) {
+  mechelenblogt_clear_statistiekjes();
 }
 
 
