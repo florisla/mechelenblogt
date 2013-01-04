@@ -87,11 +87,15 @@ function mechelenblogt_get_statistiekjes($reset = FALSE) {
   return $mechelenblogt_statistiekjes_message;
 }
 
-/* Avoid default name 'anonymous';
+/**
+ * Avoid default name 'anonymous' in the comment form; use an empty name instead.
+ * This forces users to come up with a more creative alias.
+ * See http://drupal.org/node/240610#comment-3377256
  */
 function mechelenblogt_form_alter(&$form, $form_state, $form_id){
-    if( $form_id == "comment_form" ){
-        if( $form['name']['#default_value'] == variable_get('anonymous', t('Anonymous')) ){ $form['name']['#default_value'] = ''; }
+  if( $form_id == "comment_form" ){
+    if( $form['name']['#default_value'] == variable_get('anonymous', t('Anonymous')) ){
+      $form['name']['#default_value'] = '';
     }
 }
 
