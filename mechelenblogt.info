@@ -4,3 +4,4 @@ description = Kleine toevoegingen specifiek voor de Mechelen Blogt website.
 package = "Mechelen Blogt"
 core = 7.x
 dependencies[] = block
+dependencies[] = views
