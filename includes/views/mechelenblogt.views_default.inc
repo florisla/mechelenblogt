@@ -1,4 +1,4 @@
-<?php
+l<?php
 
 /**
  * Implements hook_views_default_views().
@@ -27,7 +27,7 @@ function mechelenblogt_views_default_views() {
   $handler->display->display_options['exposed_form']['type'] = 'basic';
   $handler->display->display_options['exposed_form']['options']['reset_button_label'] = 'Terugzetten';
   $handler->display->display_options['pager']['type'] = 'mini';
-  $handler->display->display_options['pager']['options']['items_per_page'] = '5';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '3';
   $handler->display->display_options['pager']['options']['offset'] = '0';
   $handler->display->display_options['pager']['options']['id'] = '0';
   $handler->display->display_options['pager']['options']['quantity'] = '2';
@@ -146,7 +146,7 @@ function mechelenblogt_views_default_views() {
   $handler->display->display_options['exposed_form']['options']['reset_button_label'] = 'Terugzetten';
   $handler->display->display_options['pager']['type'] = 'none';
   $handler->display->display_options['pager']['options']['offset'] = '0';
-  $handler->display->display_options['style_plugin'] = 'default';
+  $handler->display->display_options['style_plugin'] = 'list';
   $handler->display->display_options['row_plugin'] = 'fields';
   /* Relationship: Inhoud: Auteur */
   $handler->display->display_options['relationships']['uid']['id'] = 'uid';
